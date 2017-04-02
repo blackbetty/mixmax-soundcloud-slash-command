@@ -4,38 +4,28 @@ var request = require('request');
 var createTemplate = require('../utils/template.js').typeahead;
 var _ = require('underscore');
 
-// A list of SoundCloud genres sourced from their website.
-var genres = {
+// A list of artifact types you can search through (will default to songs if not present)
+var resourceType = {
   // user-friendly name => key used to identify using the API
-  "Alternative": "alternativerock",
-  "Ambient": "ambient",
-  "Classical": "classical",
-  "Country": "country",
-  "Dance": "danceedm",
-  "Dancehall": "dancehall",
-  "Disco": "disco",
-  "Dubstep": "dubstep",
-  "Electronic": "electronic",
-  "Folk": "folksingersongwriter",
-  "Hip-hop & Rap": "hiphoprap",
-  "House": "house",
-  "Indie": "indie",
-  "Jazz": "jazzblues",
-  "Latin": "latin",
-  "Metal": "metal",
-  "Piano": "piano",
-  "Pop": "pop",
-  "R&B": "rbsoul",
-  "Reggae": "reggae",
-  "Reggaeton": "reggaeton",
-  "Rock": "rock",
-  "Soundtrack": "soundtrack",
-  "Techno": "techno",
-  "Trance": "trance",
-  "Trap": "trap",
-  "Triphop": "triphop",
-  "World": "world"
+  "album": "album",           // On Soundcloud this will redirect to playlist
+  "artist": "artist",         // On Soundcloud this will hit the "users" route because  artist should == user on that platform
+  "song": "track",
+  "playlist": "playlist"
 };
+
+// A list of music subscription services (will default to both if not present) that is extendable
+var platforms = {
+  // user-friendly name => key used to identify using the API
+  "Soundcloud": "Soundcloud",
+  "Spotify": "Spotify"
+};
+
+
+
+
+
+
+
 
 // The Type Ahead API.
 module.exports = function(req, res) {
@@ -46,31 +36,31 @@ module.exports = function(req, res) {
   //    <genre search word>: <track search term>
 
   var searchTerm = req.query.text;
-
+  console.log(searchTerm);
   // If a user has selected a valid genre, then it will be the prefix of the search string
-  var selectedGenre = _.find(_.keys(genres), function(key) {
+  var selectedPlatform = _.find(_.keys(platforms), function(key) {
     return searchTerm.indexOf(key + ': ') === 0; // Search prefix.
   });
 
-  // If the user doesn't have a valid genre selected, then assume they're still searching genres.
-  if (!selectedGenre) {
-    var matchingGenres = _.filter(_.keys(genres), function(genre) {
-      // Show all genres if there is no search string
+  // If the user doesn't have a valid genre selected, then assume they're still searching platforms.
+  if (!selectedPlatform) {
+    var matchingPlatforms = _.filter(_.keys(platforms), function(platform) {
+      // Show all platforms if there is no search string
       if (searchTerm.trim() === '') return true;
 
-      return genre.toLowerCase().indexOf(searchTerm.toLowerCase()) >= 0;
+      return platform.toLowerCase().indexOf(searchTerm.toLowerCase()) >= 0;
     });
 
-    if (matchingGenres.length === 0) {
+    if (matchingPlatforms.length === 0) {
       res.json([{
-        title: '<i>(no genres found)</i>',
+        title: '<i>(no platforms found)</i>',
         text: ''
       }]);
     } else {
-      res.json(matchingGenres.map(function(genre) {
+      res.json(matchingPlatforms.map(function(platform) {
         return {
-          title: genre,
-          text: genre + ': ',
+          title: platform,
+          text: platform + ': ',
           resolve: false // Don't automatically resolve and remove the text (keep searching instead).
         };
       }));
@@ -78,7 +68,7 @@ module.exports = function(req, res) {
     return;
   }
 
-  var genreAPIName = genres[selectedGenre];
+  var genreAPIName = platforms[selectedGenre];
   // The track search term is the remaining string after the genre and the delimiter.
   var trackSearchTerm = searchTerm.slice((selectedGenre + ': ').length);
 
