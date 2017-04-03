@@ -1,7 +1,7 @@
-var key = require('../utils/key');
 var sync = require('synchronize');
 var request = require('request');
 var createTemplate = require('../utils/template.js').typeahead;
+var platformAggregator = require('../platform_integrations/platformAggregator.js');
 var _ = require('underscore');
 
 // A list of artifact types you can search through (will default to songs if not present)
@@ -36,13 +36,12 @@ module.exports = function(req, res) {
   //    <genre search word>: <track search term>
 
   var searchTerm = req.query.text;
-  console.log(searchTerm);
   // If a user has selected a valid genre, then it will be the prefix of the search string
   var selectedPlatform = _.find(_.keys(platforms), function(key) {
     return searchTerm.indexOf(key + ': ') === 0; // Search prefix.
   });
 
-  // If the user doesn't have a valid genre selected, then assume they're still searching platforms.
+  // If the user doesn't have a valid platform selected, then assume they're still searching platforms.
   if (!selectedPlatform) {
     var matchingPlatforms = _.filter(_.keys(platforms), function(platform) {
       // Show all platforms if there is no search string
@@ -68,48 +67,19 @@ module.exports = function(req, res) {
     return;
   }
 
-  var genreAPIName = platforms[selectedGenre];
+  var platformName = platforms[selectedPlatform];
   // The track search term is the remaining string after the genre and the delimiter.
-  var trackSearchTerm = searchTerm.slice((selectedGenre + ': ').length);
+  var trackSearchTerm = searchTerm.slice((selectedPlatform + ': ').length);
 
-  var response;
-  try {
-    response = sync.await(request({
-      // https://developers.soundcloud.com/docs/api/reference#tracks
-      url: 'http://api.soundcloud.com/tracks',
-      qs: {
-        genre: genreAPIName,
-        q: trackSearchTerm,
-        limit: 20,
-        client_id: key
-      },
-      gzip: true,
-      json: true,
-      timeout: 10 * 1000
-    }, sync.defer()));
-  } catch (e) {
-    res.status(500).send('Error');
-    return;
-  }
+  //Call out to our service aggregator
+  var response = platformAggregator.trackSearch(platformName, trackSearchTerm, req, res);
 
   if (response.statusCode !== 200 || !response.body) {
     res.status(500).send('Error');
     return;
   }
 
-  var results = _.chain(response.body)
-    .reject(function(data) {
-      // Filter out results without artwork.
-      return !data.artwork_url;
-    })
-    .map(function(data) {
-      return {
-        title: createTemplate(data),
-        text: data.permalink_url
-      };
-    })
-    .value();
-
+  var results = platformAggregator.buildResult(platformName, response.body);
   if (results.length === 0) {
     res.json([{
       title: '<i>(no results)</i>',
