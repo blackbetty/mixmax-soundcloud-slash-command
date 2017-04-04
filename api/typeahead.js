@@ -46,7 +46,6 @@ module.exports = function(req, res) {
     var matchingPlatforms = _.filter(_.keys(platforms), function(platform) {
       // Show all platforms if there is no search string
       if (searchTerm.trim() === '') return true;
-
       return platform.toLowerCase().indexOf(searchTerm.toLowerCase()) >= 0;
     });
 
@@ -69,7 +68,7 @@ module.exports = function(req, res) {
 
   var platformName = platforms[selectedPlatform];
   // The track search term is the remaining string after the genre and the delimiter.
-  var trackSearchTerm = searchTerm.slice((selectedPlatform + ': ').length);
+  var trackSearchTerm = searchTerm.slice((platformName + ': ').length);
 
   //Call out to our service aggregator
   var response = platformAggregator.trackSearch(platformName, trackSearchTerm, req, res);
@@ -86,7 +85,6 @@ module.exports = function(req, res) {
       text: ''
     }]);
   } else {
-    console.log(results);
     res.json(results);
   }
 };
