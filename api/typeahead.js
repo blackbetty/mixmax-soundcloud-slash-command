@@ -86,7 +86,6 @@ module.exports = function(req, res) {
       text: ''
     }]);
   } else {
-    console.log(results);
     res.json(results);
   }
 };

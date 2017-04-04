@@ -53,7 +53,7 @@ exports.buildResult = function(responseBody, templateType) {
 
                     // copy to a new object that matches what the template expects
                     if (data.artists.length != 0) {
-                        templateData.artistname = data.artists[0].name // If there are multiple artists need to concat
+                        templateData.artistname = _.map(data.artists, function(artist){ return artist.name }).join(', ');
                     }
 
                     // Images are stored in the original object in reverse-size order, and we want the smallest
@@ -74,7 +74,7 @@ exports.buildResult = function(responseBody, templateType) {
         // No need to iterate since we have a single song
         console.log(responseBody);
         if (responseBody.artists.length != 0) {
-            templateData.artistname = responseBody.artists[0].name // If there are multiple artists need to concat
+            templateData.artistname = _.map(responseBody.artists, function(artist){ return artist.name }).join(', ');
         }
         templateData.artwork_url = responseBody.album.images[responseBody.album.images.length - 1].url;
         templateData.title = responseBody.name;
