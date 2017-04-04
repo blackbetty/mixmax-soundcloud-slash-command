@@ -79,13 +79,14 @@ module.exports = function(req, res) {
     return;
   }
 
-  var results = platformAggregator.buildResult(platformName, response.body);
+  var results = platformAggregator.buildResult(platformName, response.body, 'typeahead');
   if (results.length === 0) {
     res.json([{
       title: '<i>(no results)</i>',
       text: ''
     }]);
   } else {
+    console.log(results);
     res.json(results);
   }
 };

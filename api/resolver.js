@@ -23,8 +23,6 @@ module.exports = function(req, res) {
 function handleSearchString(term, req, res) {
     var response;
     response = platformAggregator.resolveSong(term, req, res);
-    console.log(response.body);
-    res.json({
-        body: createTemplate(response.body)
-    });
+    var results = platformAggregator.buildResult(term, response.body, 'resolver');
+    res.json(results);
 }

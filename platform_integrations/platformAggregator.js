@@ -7,9 +7,9 @@ var _ = require('underscore');
 
 // A list of music subscription services (will default to both if not present) that is extendable
 var platforms = {
-  // user-friendly name => key used to identify using the API
-  "Soundcloud": "Soundcloud",
-  "Spotify": "Spotify"
+    // user-friendly name => key used to identify using the API
+    "Soundcloud": "Soundcloud",
+    "Spotify": "Spotify"
 };
 
 
@@ -22,17 +22,28 @@ function getPlatform(platformName) {
         case "spotify":
             return spotifyIntegration;
             break;
+        default:
+            return null;
+            break;
     }
 
 }
 exports.trackSearch = function(platformName, trackName, req, res) {
-	platform = getPlatform(platformName.toLowerCase())
-	return	platform.trackSearch(trackName, req, res);
+    platform = getPlatform(platformName.toLowerCase())
+    return platform.trackSearch(trackName, req, res);
 }
 
-exports.buildResult = function(platformName, responseBody) {
-    platform = getPlatform(platformName.toLowerCase())
-	return platform.buildResult(responseBody);
+exports.buildResult = function(platformName, responseBody, templateType) {
+    var platform = getPlatform(platformName.toLowerCase());
+    // If we don't have reference to the name directly, we can at least pass in the URL
+    // and get the name like that.
+    if (platform == null) {
+        platformName = _.find(_.keys(platforms), function(key) {
+            return platformName.indexOf(key.toLowerCase()) > -1; // Search prefix.
+        });
+        platform = getPlatform(platformName.toLowerCase());
+    }
+    return platform.buildResult(responseBody, templateType);
 }
 
 

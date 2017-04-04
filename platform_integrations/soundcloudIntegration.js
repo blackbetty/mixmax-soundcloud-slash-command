@@ -2,7 +2,8 @@ var request = require('request');
 var key = require('../utils/key');
 var sync = require('synchronize');
 var _ = require('underscore');
-var createTemplate = require('../utils/template.js').typeahead;
+var createTypeTemplate = require('../utils/template.js').typeahead;
+var createResolverTemplate = require('../utils/template.js').resolver;
 
 exports.trackSearch = function(trackName, req, res) {
     var response;
@@ -27,35 +28,53 @@ exports.trackSearch = function(trackName, req, res) {
 }
 
 
-exports.buildResult = function(responseBody) {
+exports.buildResult = function(responseBody, templateType) {
 
     // These are the fields the template expects
     var templateData = {
         artistname: null,
         artwork_url: null,
         title: null,
-        track_url: null
+        track_url: null,
+        user_permalink_url: null,
+        description: null
     }
-    return _.chain(responseBody)
-        .reject(function(data) {
-            // Filter out results without artwork.
-            return !data.artwork_url;
-        })
-        .map(function(data) {
-            //Strip down the object a little, probably a better way to do this with underscore
-            if (data.user) {
-                templateData.artistname = data.user.username
-            }
-            templateData.artwork_url = data.artwork_url;
-            templateData.title = data.title;
-            templateData.track_url = data.permalink_url;
 
-            return {
-                title: createTemplate(templateData),
-                text: templateData.track_url
-            };
-        })
-        .value();
+    if (templateType == 'typeahead') {
+        return _.chain(responseBody)
+            .reject(function(data) {
+                // Filter out results without artwork.
+                return !data.artwork_url;
+            })
+            .map(function(data) {
+                //Strip down the object a little, probably a better way to do this with underscore
+                if (data.user) {
+                    templateData.artistname = data.user.username
+                }
+                templateData.artwork_url = data.artwork_url;
+                templateData.title = data.title;
+                templateData.track_url = data.permalink_url;
+
+                return {
+                    title: createTypeTemplate(templateData),
+                    text: templateData.track_url
+                };
+            })
+            .value();
+    } else if (templateType == 'resolver') {
+        // No need to iterate since we have a single song
+        if (responseBody.user) {
+            templateData.artistname = responseBody.user.username;
+            templateData.user_permalink_url = responseBody.user.permalink_url;
+        }
+        templateData.artwork_url = responseBody.artwork_url;
+        templateData.title = responseBody.title;
+        templateData.track_url = responseBody.permalink_url;
+        templateData.description = responseBody.description;
+        return {
+            body: createResolverTemplate(templateData)
+        };
+    }
 }
 
 

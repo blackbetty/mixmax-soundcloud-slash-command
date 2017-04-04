@@ -7,7 +7,7 @@
   border-radius: 2px;
   padding: 0.45rem;
 ">
-  <a href="<% return data.permalink_url %>" target="_blank">
+  <a href="<% return data.track_url %>" target="_blank">
     <img style="
       height: 100px;
       border-radius: 2px;
@@ -24,7 +24,7 @@
       text-overflow: ellipsis;
       width: 445px;
     ">
-      <a href="<% return data.permalink_url %>" target="_blank" style="
+      <a href="<% return data.track_url %>" target="_blank" style="
         text-decoration: none;
         color: rgb(33, 33, 33);
       ">
@@ -39,14 +39,14 @@
       width: 445px;
     ">
       <a href="<%
-        if (data.user) return data.user.permalink_url;
+        if (data.user_permalink_url) return data.user_permalink_url;
         return '';
       %>" target="_blank" style="
         text-decoration: none;
         color: rgb(111, 111, 111);
       ">
         <%
-          if (data.user) return data.user.username;
+          if (data.artistname) return data.artistname;
           return 'Username';
         %>
       </a>
