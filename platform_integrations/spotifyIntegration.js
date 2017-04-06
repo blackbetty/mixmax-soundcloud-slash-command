@@ -1,5 +1,4 @@
 var request = require('request');
-var key = require('../utils/key');
 var sync = require('synchronize');
 var _ = require('underscore');
 var createTypeTemplate = require('../utils/template.js').typeahead;
@@ -7,7 +6,7 @@ var createResolverTemplate = require('../utils/template.js').resolver;
 
 // Functions in this Integration file must at least match those expected by the platformAggregator
 
-exports.trackSearch = function(trackName, req, res) {
+exports.trackSearch = function (trackName, req, res) {
     var response;
     try {
         response = sync.await(request({
@@ -27,10 +26,10 @@ exports.trackSearch = function(trackName, req, res) {
         res.status(500).send('Error');
         return res;
     }
-}
+};
 
 
-exports.buildResult = function(responseBody, templateType) {
+exports.buildResult = function (responseBody, templateType) {
     // These are the fields the template needs
 
     var templateData = {
@@ -40,22 +39,22 @@ exports.buildResult = function(responseBody, templateType) {
         track_url: null,
         user_permalink_url: null,
         description: null
-    }
+    };
 
     // Builds the needed template based on the flag passed
     if (templateType == 'typeahead') {
         if (responseBody.tracks.items != null) {
             return _.chain(responseBody.tracks.items)
-                .reject(function(data) {
+                .reject(function (data) {
                     // Filter out results without an image.
                     return (data.album.images.length == 0);
                 })
-                .map(function(data) {
+                .map(function (data) {
 
 
                     // copy to a new object that matches what the template expects
                     if (data.artists.length != 0) {
-                        templateData.artistname = _.map(data.artists, function(artist){ return artist.name }).join(', ');
+                        templateData.artistname = _.map(data.artists, function (artist){ return artist.name; }).join(', ');
                     }
 
                     // Images are stored in the original object in reverse-size order, and we want the smallest
@@ -77,9 +76,8 @@ exports.buildResult = function(responseBody, templateType) {
 
         // Build the template
         // No need to iterate since we have a single song
-        console.log(responseBody);
         if (responseBody.artists.length != 0) {
-            templateData.artistname = _.map(responseBody.artists, function(artist){ return artist.name }).join(', ');
+            templateData.artistname = _.map(responseBody.artists, function (artist){ return artist.name; }).join(', ');
         }
         templateData.artwork_url = responseBody.album.images[responseBody.album.images.length - 1].url;
         templateData.title = responseBody.name;
@@ -100,10 +98,10 @@ exports.buildResult = function(responseBody, templateType) {
         // If a templateType flag is not passed, or is invalid, we return null;
         return null;
     }
-}
+};
 
 
-exports.resolveSong = function(songID, req, res) {
+exports.resolveSong = function (songID, req, res) {
     try {
         return sync.await(request({
             url: songID,
@@ -115,4 +113,4 @@ exports.resolveSong = function(songID, req, res) {
         res.status(500).send('Error');
         return;
     }
-}
+};

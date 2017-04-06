@@ -5,7 +5,7 @@ var _ = require('underscore');
 var createTypeTemplate = require('../utils/template.js').typeahead;
 var createResolverTemplate = require('../utils/template.js').resolver;
 
-exports.trackSearch = function(trackName, req, res) {
+exports.trackSearch = function (trackName, req, res) {
     var response;
     try {
         response = sync.await(request({
@@ -25,11 +25,11 @@ exports.trackSearch = function(trackName, req, res) {
         res.status(500).send('Error');
         return res;
     }
-}
+};
 
 // Functions in this Integration file must at least match those expected by the platformAggregator
 
-exports.buildResult = function(responseBody, templateType) {
+exports.buildResult = function (responseBody, templateType) {
 
     // These are the fields the template expects
     var templateData = {
@@ -39,19 +39,19 @@ exports.buildResult = function(responseBody, templateType) {
         track_url: null,
         user_permalink_url: null,
         description: null
-    }
+    };
 
     // Builds the needed template based on the flag passed
     if (templateType == 'typeahead') {
         return _.chain(responseBody)
-            .reject(function(data) {
+            .reject(function (data) {
                 // Filter out results without artwork.
                 return !data.artwork_url;
             })
-            .map(function(data) {
+            .map(function (data) {
 
                 if (data.user) {
-                    templateData.artistname = data.user.username
+                    templateData.artistname = data.user.username;
                 }
                 templateData.artwork_url = data.artwork_url;
                 templateData.title = data.title;
@@ -79,12 +79,12 @@ exports.buildResult = function(responseBody, templateType) {
         };
     } else {
         // If a templateType flag is not passed, or is invalid, we return null;
-        return null
+        return null;
     }
-}
+};
 
 
-exports.resolveSong = function(songID, req, res) {
+exports.resolveSong = function (songID, req, res) {
     try {
         return sync.await(request({
             url: 'http://api.soundcloud.com/resolve',
@@ -100,4 +100,4 @@ exports.resolveSong = function(songID, req, res) {
         res.status(500).send('Error');
         return;
     }
-}
+};

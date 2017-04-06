@@ -1,13 +1,10 @@
-var sync = require('synchronize');
-var request = require('request');
-var createTemplate = require('../utils/template.js').typeahead;
 var platformAggregator = require('../platform_integrations/platformAggregator.js');
 var _ = require('underscore');
 
 
 
 // The Type Ahead API.
-module.exports = function(req, res) {
+module.exports = function (req, res) {
     // The idea here is to take the search string (provided in req.query.text) and provide helpful
     // contextual feedback as the user is typing. For this particular command, we're going to have the
     // user search the Soundcloud genre first, then the name of the track. So our search string is the
@@ -20,9 +17,11 @@ module.exports = function(req, res) {
 
     // If the user doesn't have a valid platform selected, then assume they're still searching platforms.
     if (!selectedPlatform) {
-        var matchingPlatforms = _.filter(_.keys(platforms), function(platform) {
+        var matchingPlatforms = _.filter(_.keys(global.platforms), function (platform) {
             // Show all platforms if there is no search string
-            if (searchTerm.trim() === '') return true;
+            if (searchTerm.trim() === ''){
+                return true;
+            }
             return platform.toLowerCase().indexOf(searchTerm.toLowerCase()) >= 0;
         });
 
@@ -32,7 +31,7 @@ module.exports = function(req, res) {
                 text: ''
             }]);
         } else {
-            res.json(matchingPlatforms.map(function(platform) {
+            res.json(matchingPlatforms.map(function (platform) {
                 return {
                     title: platform,
                     text: platform + ': ',
@@ -47,7 +46,7 @@ module.exports = function(req, res) {
     // The track search term is the remaining string after the genre and the delimiter.
     var trackSearchTerm = searchTerm.slice((platformName + ': ').length);
 
-    //Call out to our service aggregator
+    // Call out to our service aggregator
     var response = platformAggregator.trackSearch(platformName, trackSearchTerm, req, res);
 
     if (response.statusCode !== 200 || !response.body) {
