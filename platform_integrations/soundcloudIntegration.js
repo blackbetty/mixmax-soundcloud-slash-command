@@ -27,6 +27,7 @@ exports.trackSearch = function(trackName, req, res) {
     }
 }
 
+// Functions in this Integration file must at least match those expected by the platformAggregator
 
 exports.buildResult = function(responseBody, templateType) {
 
@@ -40,6 +41,7 @@ exports.buildResult = function(responseBody, templateType) {
         description: null
     }
 
+    // Builds the needed template based on the flag passed
     if (templateType == 'typeahead') {
         return _.chain(responseBody)
             .reject(function(data) {
@@ -47,7 +49,7 @@ exports.buildResult = function(responseBody, templateType) {
                 return !data.artwork_url;
             })
             .map(function(data) {
-                //Strip down the object a little, probably a better way to do this with underscore
+
                 if (data.user) {
                     templateData.artistname = data.user.username
                 }
@@ -71,9 +73,13 @@ exports.buildResult = function(responseBody, templateType) {
         templateData.title = responseBody.title;
         templateData.track_url = responseBody.permalink_url;
         templateData.description = responseBody.description;
+
         return {
             body: createResolverTemplate(templateData)
         };
+    } else {
+        // If a templateType flag is not passed, or is invalid, we return null;
+        return null
     }
 }
 

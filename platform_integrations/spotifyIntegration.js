@@ -5,6 +5,7 @@ var _ = require('underscore');
 var createTypeTemplate = require('../utils/template.js').typeahead;
 var createResolverTemplate = require('../utils/template.js').resolver;
 
+// Functions in this Integration file must at least match those expected by the platformAggregator
 
 exports.trackSearch = function(trackName, req, res) {
     var response;
@@ -41,6 +42,7 @@ exports.buildResult = function(responseBody, templateType) {
         description: null
     }
 
+    // Builds the needed template based on the flag passed
     if (templateType == 'typeahead') {
         if (responseBody.tracks.items != null) {
             return _.chain(responseBody.tracks.items)
@@ -68,9 +70,12 @@ exports.buildResult = function(responseBody, templateType) {
                 })
                 .value();
         } else {
+            // if no tracks are found, we return null;
             return null;
         }
     } else if (templateType == 'resolver') {
+
+        // Build the template
         // No need to iterate since we have a single song
         console.log(responseBody);
         if (responseBody.artists.length != 0) {
@@ -85,10 +90,14 @@ exports.buildResult = function(responseBody, templateType) {
         } else {
             templateData.description = 'Album: ' + responseBody.album.name;
         }
+
+        // Return our resolver template to the body of our response
         return {
             body: createResolverTemplate(templateData)
         };
+
     } else {
+        // If a templateType flag is not passed, or is invalid, we return null;
         return null;
     }
 }

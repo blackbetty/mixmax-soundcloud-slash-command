@@ -4,27 +4,6 @@ var createTemplate = require('../utils/template.js').typeahead;
 var platformAggregator = require('../platform_integrations/platformAggregator.js');
 var _ = require('underscore');
 
-// A list of artifact types you can search through (will default to songs if not present)
-var resourceType = {
-    // user-friendly name => key used to identify using the API
-    "album": "album", // On Soundcloud this will redirect to playlist
-    "artist": "artist", // On Soundcloud this will hit the "users" route because  artist should == user on that platform
-    "song": "track",
-    "playlist": "playlist"
-};
-
-// A list of music subscription services (will default to both if not present) that is extendable
-var platforms = {
-    // user-friendly name => key used to identify using the API
-    "Soundcloud": "Soundcloud",
-    "Spotify": "Spotify"
-};
-
-
-
-
-
-
 
 
 // The Type Ahead API.
@@ -33,13 +12,11 @@ module.exports = function(req, res) {
     // contextual feedback as the user is typing. For this particular command, we're going to have the
     // user search the Soundcloud genre first, then the name of the track. So our search string is the
     // format:
-    //    <genre search word>: <track search term>
+    //    <platform search word>: <track search term>
 
     var searchTerm = req.query.text;
-    // If a user has selected a valid genre, then it will be the prefix of the search string
-    var selectedPlatform = _.find(_.keys(platforms), function(key) {
-        return searchTerm.indexOf(key + ': ') === 0; // Search prefix.
-    });
+    // If a user has selected a valid platform, then it will be the prefix of the search string
+    var selectedPlatform = platformAggregator.getPlatformPrefix(searchTerm);
 
     // If the user doesn't have a valid platform selected, then assume they're still searching platforms.
     if (!selectedPlatform) {
@@ -66,7 +43,7 @@ module.exports = function(req, res) {
         return;
     }
 
-    var platformName = platforms[selectedPlatform];
+    var platformName = selectedPlatform;
     // The track search term is the remaining string after the genre and the delimiter.
     var trackSearchTerm = searchTerm.slice((platformName + ': ').length);
 
