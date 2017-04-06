@@ -10,7 +10,7 @@
     "type": "git",
     "url": "git://github.com/blackbetty/mixmax-soundcloud-slash-command.git "
   },
-  "author": "Dan Golant (with acknowledgments to the Mixmax team)",
+  "author": "Dan Golant + previous authors from the Mixmax team)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/blackbetty/mixmax-soundcloud-slash-command/issues"
